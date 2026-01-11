@@ -1,0 +1,135 @@
+:root {
+    --primary: #ff5e00;
+    --dark: #1a1a1a;
+    --darker: #121212;
+    --light: #e0e0e0;
+    --card-bg: #252525;
+    --text-muted: #aaaaaa;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+body { background-color: var(--darker); color: var(--light); padding-top: 70px; min-height: 100vh; display: flex; flex-direction: column; }
+
+a { text-decoration: none; color: inherit; cursor: pointer; }
+
+/* Navbar */
+.navbar {
+    background-color: var(--card-bg);
+    padding: 15px 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.logo { font-size: 1.5rem; font-weight: bold; color: var(--primary); cursor: pointer; }
+
+.search-box { display: flex; background: var(--darker); border-radius: 5px; overflow: hidden; }
+.search-box input { background: transparent; border: none; color: white; padding: 8px 15px; outline: none; }
+.search-box button { background: var(--primary); border: none; color: white; padding: 8px 15px; cursor: pointer; }
+
+.nav-links a { margin-left: 20px; font-weight: 600; transition: 0.3s; }
+.nav-links a:hover { color: var(--primary); }
+
+/* Layout & Grid */
+#app { max-width: 1200px; margin: 0 auto; padding: 20px; flex: 1; width: 100%; }
+
+.section-title {
+    border-left: 5px solid var(--primary);
+    padding-left: 15px;
+    margin: 30px 0 20px;
+    font-size: 1.4rem;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+}
+
+/* Card Styling */
+.manga-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s;
+    position: relative;
+    cursor: pointer;
+}
+
+.manga-card:hover { transform: translateY(-5px); }
+
+.card-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.card-info { padding: 10px; }
+.card-title { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+.rating-badge { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #ffeb3b; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+.type-badge { position: absolute; top: 10px; left: 10px; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; text-transform: uppercase; }
+
+/* Home Layout */
+.home-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+.hot-comics-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+.hot-comics-scroll .manga-card { min-width: 150px; }
+
+/* Detail Page */
+.detail-header { display: flex; gap: 30px; margin-bottom: 40px; background: var(--card-bg); padding: 20px; border-radius: 10px; }
+.detail-cover { width: 220px; border-radius: 8px; }
+.detail-info h1 { font-size: 2rem; margin-bottom: 10px; }
+.synopsis { margin: 20px 0; line-height: 1.6; color: #ccc; }
+.chapter-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.chapter-btn {
+    background: var(--darker);
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    border: 1px solid #333;
+    transition: 0.3s;
+}
+.chapter-btn:hover { background: var(--primary); border-color: var(--primary); }
+
+/* Reader */
+.reader-container { max-width: 800px; margin: 0 auto; text-align: center; }
+.reader-nav { margin: 20px 0; display: flex; justify-content: space-between; }
+.nav-btn { background: var(--primary); color: white; padding: 10px 20px; border-radius: 5px; }
+.comic-page { width: 100%; display: block; margin-bottom: 5px; }
+
+/* Buttons & Pagination */
+.btn-load { display: block; width: 100%; padding: 15px; background: var(--primary); color: white; border: none; margin-top: 20px; cursor: pointer; font-size: 1rem; border-radius: 5px; }
+.genre-tag { display: inline-block; background: var(--card-bg); padding: 8px 15px; margin: 5px; border-radius: 20px; border: 1px solid #333; }
+.genre-tag:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Loading & Footer */
+.loading { text-align: center; padding: 50px; }
+.spinner { border: 4px solid #333; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+footer { text-align: center; padding: 20px; background: var(--card-bg); margin-top: auto; color: #777; }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .home-layout { grid-template-columns: 1fr; }
+    .detail-header { flex-direction: column; }
+    .detail-cover { width: 100%; max-width: 300px; margin: 0 auto; display: block; }
+    .nav-links { display: none; } /* Simplified for mobile */
+      }
