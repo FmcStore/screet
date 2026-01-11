@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mangasusu - Baca Komik Online</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="app.loadHome()">
+                <i class="fas fa-book-reader"></i> Mangasusu
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Cari komik...">
+                <button onclick="app.handleSearch()"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="nav-links">
+                <a href="#" onclick="app.loadHome()">Home</a>
+                <a href="#" onclick="app.loadList(1)">Daftar Komik</a>
+                <a href="#" onclick="app.loadGenres()">Genre</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="app">
+        <!-- Konten akan di-load di sini oleh JavaScript -->
+        <div class="loading"><div class="spinner"></div></div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Mangasusu Project. API by Sanka Vollerei.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
