@@ -2,70 +2,45 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FmcPlus - Premium Comic Reader</title>
-    <!-- Google Fonts: Poppins untuk kesan Modern -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FmcPlus - Premium Reader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-    <!-- Navbar Floating / Glass Effect -->
-    <nav class="navbar" id="navbar">
+    <nav class="navbar">
         <div class="nav-container">
             <div class="logo" onclick="app.loadHome()">
                 <i class="fas fa-crown"></i> FmcPlus
             </div>
-            <div class="nav-right">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Cari judul komik...">
-                    <button onclick="app.handleSearch()"><i class="fas fa-search"></i></button>
+            
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div class="search-wrap">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Cari Manga...">
                 </div>
-                <div class="nav-links">
-                    <a href="#" onclick="app.loadHome()" class="active">Beranda</a>
-                    <a href="#" onclick="app.loadList(1)">Daftar</a>
-                    <a href="#" onclick="app.loadGenres()">Genre</a>
+                <div style="display:flex; gap:15px;" class="nav-links-desktop">
+                    <a href="#" onclick="app.loadHome()" style="color:#fff;"><i class="fas fa-home"></i></a>
+                    <a href="#" onclick="app.loadList(1)" style="color:#fff;"><i class="fas fa-list"></i></a>
+                    <a href="#" onclick="app.loadGenres()" style="color:#fff;"><i class="fas fa-tags"></i></a>
                 </div>
-            </div>
-            <!-- Mobile Menu Toggle -->
-            <div class="menu-toggle" onclick="toggleMenu()">
-                <i class="fas fa-bars"></i>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main id="app">
-        <div class="loading-screen">
-            <div class="loader"></div>
-            <p>Memuat FmcPlus...</p>
-        </div>
+        <!-- Konten di-load di sini -->
     </main>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <h3>FmcPlus</h3>
-            <p>Platform baca komik premium dengan pengalaman terbaik.</p>
-            <p class="credits">&copy; 2026 FmcPlus. API by Sanka Vollerei.</p>
-        </div>
-    </footer>
-
     <script src="script.js"></script>
-    <script>
-        // Mobile Menu Logic
-        function toggleMenu() {
-            const links = document.querySelector('.nav-links');
-            links.classList.toggle('show');
+    <style>
+        /* Sembunyikan link text di mobile agar rapi */
+        @media (max-width: 600px) {
+            .nav-links-desktop { display: none !important; }
+            .search-wrap { display: none; } /* Opsional: hilangkan search di header mobile */
+            /* Tambahkan search di dalam halaman home saja untuk mobile */
         }
-        
-        // Sticky Navbar Effect
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 50) nav.classList.add('scrolled');
-            else nav.classList.remove('scrolled');
-        });
-    </script>
+    </style>
 </body>
 </html>
