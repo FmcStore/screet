@@ -3,42 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mangasusu - Baca Komik Online</title>
+    <title>FmcPlus - Premium Comic Reader</title>
+    <!-- Google Fonts: Poppins untuk kesan Modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome untuk Ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-    <!-- Header / Navbar -->
-    <nav class="navbar">
+    <!-- Navbar Floating / Glass Effect -->
+    <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="logo" onclick="app.loadHome()">
-                <i class="fas fa-book-reader"></i> Mangasusu
+                <i class="fas fa-crown"></i> FmcPlus
             </div>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Cari komik...">
-                <button onclick="app.handleSearch()"><i class="fas fa-search"></i></button>
+            <div class="nav-right">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Cari judul komik...">
+                    <button onclick="app.handleSearch()"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="nav-links">
+                    <a href="#" onclick="app.loadHome()" class="active">Beranda</a>
+                    <a href="#" onclick="app.loadList(1)">Daftar</a>
+                    <a href="#" onclick="app.loadGenres()">Genre</a>
+                </div>
             </div>
-            <div class="nav-links">
-                <a href="#" onclick="app.loadHome()">Home</a>
-                <a href="#" onclick="app.loadList(1)">Daftar Komik</a>
-                <a href="#" onclick="app.loadGenres()">Genre</a>
+            <!-- Mobile Menu Toggle -->
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <main id="app">
-        <!-- Konten akan di-load di sini oleh JavaScript -->
-        <div class="loading"><div class="spinner"></div></div>
+        <div class="loading-screen">
+            <div class="loader"></div>
+            <p>Memuat FmcPlus...</p>
+        </div>
     </main>
 
     <!-- Footer -->
     <footer>
-        <p>&copy; 2026 Mangasusu Project. API by Sanka Vollerei.</p>
+        <div class="footer-content">
+            <h3>FmcPlus</h3>
+            <p>Platform baca komik premium dengan pengalaman terbaik.</p>
+            <p class="credits">&copy; 2026 FmcPlus. API by Sanka Vollerei.</p>
+        </div>
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Mobile Menu Logic
+        function toggleMenu() {
+            const links = document.querySelector('.nav-links');
+            links.classList.toggle('show');
+        }
+        
+        // Sticky Navbar Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+        });
+    </script>
 </body>
 </html>
