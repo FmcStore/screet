@@ -2,301 +2,287 @@ const app = {
     baseUrl: 'https://www.sankavollerei.com/comic/mangasusuku',
     container: document.getElementById('app'),
 
-    async fetchData(endpoint) {
+    // --- UTILS ---
+    async fetchAPI(endpoint) {
         try {
-            this.container.innerHTML = '<div class="loading-screen"><div class="loader"></div><p>Memuat konten...</p></div>';
-            const response = await fetch(`${this.baseUrl}${endpoint}`);
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error(error);
-            this.container.innerHTML = '<div style="text-align:center; padding:50px;"><h3>Terjadi Kesalahan</h3><p>Gagal memuat data API.</p><button class="btn-primary" onclick="location.reload()">Coba Lagi</button></div>';
+            this.container.innerHTML = '<div class="loading-box"><div class="spinner"></div><p>FmcPlus Loading...</p></div>';
+            const req = await fetch(`${this.baseUrl}${endpoint}`);
+            return await req.json();
+        } catch (e) {
+            this.container.innerHTML = '<div style="text-align:center; padding:50px;"><h3>Gagal Memuat</h3><p>Cek koneksi internet Anda.</p></div>';
             return null;
         }
     },
 
-    // Utility untuk handle data kosong
-    safe(value, fallback = '') {
-        return (value && value !== 'null' && value !== null) ? value : fallback;
+    formatSlug(url) {
+        if (!url || url.includes('#')) return null;
+        const parts = url.split('/');
+        return parts[parts.length - 1] || parts[parts.length - 2];
     },
 
-    // --- HOME ---
+    // --- HOME PAGE ---
     async loadHome(page = 1) {
-        let endpoint = page === 1 ? '/home' : `/home/${page}`;
-        const data = await this.fetchData(endpoint);
+        const endpoint = page === 1 ? '/home' : `/home/${page}`;
+        const data = await this.fetchAPI(endpoint);
         if (!data || !data.success) return;
 
-        let html = '<div class="container">';
+        // Ambil komik pertama dari hotComics untuk jadi Banner Utama
+        const mainFeature = data.hotComics ? data.hotComics[0] : null;
+        const otherHot = data.hotComics ? data.hotComics.slice(1, 5) : [];
 
-        // 1. Hot Comics Slider (Hanya Page 1)
-        if (page === 1 && data.hotComics) {
-            html += `
-                <div class="hero-section">
-                    <div class="section-header">
-                        <span class="section-title">Sedang Hangat <i class="fas fa-fire" style="color:var(--primary)"></i></span>
+        let html = `
+            <div class="container">
+                <!-- HERO SECTION -->
+                ${page === 1 && mainFeature ? `
+                <div class="hero-wrapper">
+                    <div class="hero-banner" onclick="app.loadDetail('${mainFeature.slug}')">
+                        <img src="${mainFeature.image}" alt="${mainFeature.title}">
+                        <div class="hero-info">
+                            <span style="background:var(--primary); color:#000; padding:4px 8px; border-radius:4px; font-weight:700; font-size:0.8rem;">HOT 🔥</span>
+                            <h2>${mainFeature.title}</h2>
+                            <p>Chapter ${mainFeature.chapter}</p>
+                        </div>
                     </div>
-                    <div class="hero-scroll">
-                        ${data.hotComics.map(manga => `
-                            <div class="hero-card" onclick="app.loadDetail('${manga.slug}')">
-                                <img src="${manga.image}" loading="lazy">
-                                <div class="hero-overlay">
-                                    <div class="hero-title">${manga.title}</div>
-                                    <div class="hero-chapter">Ch. ${manga.chapter}</div>
+                    <div class="hero-side" style="display:flex; flex-direction:column; gap:15px;">
+                        ${otherHot.map(m => `
+                            <div style="display:flex; gap:10px; background:var(--bg-card); padding:10px; border-radius:8px; cursor:pointer;" onclick="app.loadDetail('${m.slug}')">
+                                <img src="${m.image}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
+                                <div>
+                                    <div style="font-weight:600; font-size:0.9rem; margin-bottom:5px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.title}</div>
+                                    <div style="color:var(--primary); font-size:0.8rem;">${m.chapter}</div>
                                 </div>
                             </div>
                         `).join('')}
                     </div>
                 </div>
-            `;
-        }
+                ` : ''}
 
-        // 2. Main Content Grid & Sidebar
-        html += `<div class="content-grid">
-            <div class="main-updates">
-                <div class="section-header">
+                <!-- MAIN GRID -->
+                <div class="section-head">
                     <span class="section-title">Update Terbaru</span>
                 </div>
-                <div class="manga-grid">
-                    ${data.latestUpdates.map(manga => this.renderCard(manga)).join('')}
-                </div>
                 
-                <div style="margin-top: 40px; text-align: center;">
-                    ${page > 1 ? `<button class="btn-nav" onclick="app.loadHome(${page - 1})"><i class="fas fa-chevron-left"></i> Sebelumnya</button>` : ''}
-                    ${data.pagination && data.pagination.hasNextPage ? 
-                        `<button class="btn-primary" onclick="app.loadHome(${data.pagination.nextPage})">Halaman ${data.pagination.nextPage} <i class="fas fa-chevron-right"></i></button>` 
-                        : ''}
+                <div class="manga-grid">
+                    ${data.latestUpdates.map(m => this.renderCard(m)).join('')}
                 </div>
-            </div>`;
 
-        // 3. Sidebar (Hanya Page 1)
-        if (page === 1 && data.popularToday) {
-            html += `
-                <div class="sidebar">
-                    <div class="section-header">
-                        <span class="section-title">Top Hari Ini</span>
-                    </div>
-                    <div class="sidebar-list">
-                        ${data.popularToday.map((manga, index) => `
-                            <div class="sidebar-item" onclick="app.loadDetail('${manga.slug}')">
-                                <span class="sidebar-rank">#${index + 1}</span>
-                                <img src="${manga.image}" class="sidebar-img">
-                                <div>
-                                    <div style="font-weight:600; font-size:0.9rem; margin-bottom:3px;">${manga.title}</div>
-                                    <div style="font-size:0.8rem; color:var(--primary);">${this.safe(manga.chapter)}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
+                <!-- PAGINATION -->
+                <div style="margin:40px 0; display:flex; justify-content:center; gap:15px;">
+                    ${page > 1 ? `<button onclick="app.loadHome(${page-1})" class="btn-read" style="background:#333; color:#fff;">Previous</button>` : ''}
+                    ${data.pagination.hasNextPage ? `<button onclick="app.loadHome(${data.pagination.nextPage})" class="btn-read">Next Page</button>` : ''}
                 </div>
-            `;
-        }
-
-        html += '</div></div>'; // Tutup grid & container
+            </div>
+        `;
         this.container.innerHTML = html;
-        window.scrollTo(0, 0);
+        window.scrollTo(0,0);
     },
 
-    // --- DETAIL ---
+    // --- DETAIL PAGE ---
     async loadDetail(slug) {
-        const data = await this.fetchData(`/detail/${slug}`);
+        const data = await this.fetchAPI(`/detail/${slug}`);
         if (!data || !data.success) return;
 
-        // Background image dari cover untuk efek blur
+        // Ambil chapter pertama dan terakhir untuk tombol pintas
+        const reversedChapters = [...data.chapters].reverse(); // Biasanya API return Descending
+        const firstChapter = reversedChapters[0]; 
+        const lastChapter = data.chapters[0];
+
         let html = `
-            <div class="detail-hero" style="background-image: url('${data.image}');">
-                <div class="detail-content">
-                    <img src="${data.image}" class="detail-poster">
-                    <div class="detail-text">
-                        <h1>${data.title}</h1>
-                        <div class="detail-stats">
-                            <span><i class="fas fa-star"></i> ${this.safe(data.rating, 'N/A')}</span>
-                            <span>${this.safe(data.alternativeTitle)}</span>
+            <div class="detail-backdrop">
+                <img src="${data.image}">
+            </div>
+            
+            <div class="container">
+                <div class="detail-layout">
+                    <img src="${data.image}" class="detail-poster-img">
+                    
+                    <div class="detail-info">
+                        <h1 class="detail-title">${data.title}</h1>
+                        <div class="detail-meta">
+                            <span class="rating-tag"><i class="fas fa-star"></i> ${data.rating}</span>
+                            <span>${data.genres.map(g => g.name).slice(0, 3).join(', ')}</span>
+                            <span>${data.status || 'Ongoing'}</span>
                         </div>
-                        <div class="detail-tags">
-                            ${data.genres.map(g => `<span>${g.name}</span>`).join('')}
+                        
+                        <div class="btn-action-group">
+                            ${firstChapter ? `
+                            <button class="btn-read" onclick="app.loadRead('${firstChapter.slug}')">
+                                <i class="fas fa-book-open"></i> Mulai Baca
+                            </button>` : ''}
+                            
+                            ${lastChapter ? `
+                            <button class="btn-read" style="background:#333; color:#fff;" onclick="app.loadRead('${lastChapter.slug}')">
+                                <i class="fas fa-forward"></i> Ch. Terbaru
+                            </button>` : ''}
                         </div>
-                        <p class="synopsis">${data.synopsis}</p>
+
+                        <div class="synopsis-box">
+                            <h4>Sinopsis</h4>
+                            <p>${data.synopsis}</p>
+                        </div>
+
+                        <div class="chapter-list-container">
+                            <h3 style="margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">Daftar Chapter</h3>
+                            <div style="max-height: 500px; overflow-y: auto;">
+                                ${data.chapters.map(c => `
+                                    <div class="chapter-item" onclick="app.loadRead('${c.slug}')">
+                                        <span style="font-weight:600;">${c.title}</span>
+                                        <span style="font-size:0.8rem; color:#888;">${c.date}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div class="chapter-container">
-                <div class="section-header">
-                    <span class="section-title">List Chapter</span>
-                </div>
-                <div class="chapter-grid">
-                    ${data.chapters.map(chapter => `
-                        <div class="chapter-btn" onclick="app.loadRead('${chapter.slug}')">
-                            <div>
-                                <span>${chapter.title}</span><br>
-                                <span class="chapter-date">${chapter.date}</span>
-                            </div>
-                            <i class="fas fa-play-circle" style="color:var(--text-muted)"></i>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
         `;
         this.container.innerHTML = html;
-        window.scrollTo(0, 0);
+        window.scrollTo(0,0);
     },
 
-    // --- READ ---
+    // --- READER PAGE (REVISED) ---
     async loadRead(chapterSlug) {
+        // Hapus trailing slash
         const cleanSlug = chapterSlug.replace(/\/$/, "");
-        const data = await this.fetchData(`/chapter/${cleanSlug}`);
+        const data = await this.fetchAPI(`/chapter/${cleanSlug}`);
+        
         if (!data || !data.success) return;
 
-        // Ambil slug manga induk untuk tombol kembali (sederhana)
-        const parentSlug = cleanSlug.split('-chapter')[0];
+        // Parent Slug untuk tombol kembali (misal: judul-komik-chapter-1 -> judul-komik)
+        const parentSlug = cleanSlug.split('-chapter-')[0];
+
+        // Navigasi Next/Prev Links
+        const prevLink = this.formatSlug(data.navigation.prev);
+        const nextLink = this.formatSlug(data.navigation.next);
 
         let html = `
-            <div class="reader-wrapper">
-                <div style="padding: 20px; max-width: 800px; margin: 0 auto; display:flex; justify-content:space-between; align-items:center;">
-                    <button class="btn-nav" onclick="app.loadDetail('${parentSlug}')"><i class="fas fa-arrow-left"></i> Info</button>
-                    <h4 style="color:#fff; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:60%;">${data.title}</h4>
+            <div class="reader-mode">
+                <!-- Header Reader -->
+                <div class="reader-header">
+                    <button onclick="app.loadDetail('${parentSlug}')" style="background:none; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="reader-title">${data.title}</div>
+                    <button onclick="window.scrollTo(0,0)" style="background:none; border:none; color:var(--primary); font-size:1.2rem; cursor:pointer;">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
                 </div>
 
-                <div class="reader-content">
-                    ${data.images.map(img => `<img src="${img}" class="comic-image" loading="lazy">`).join('')}
+                <!-- Images -->
+                <div class="image-container">
+                    ${data.images.map(img => `<img src="${img}" class="comic-page" loading="lazy">`).join('')}
                 </div>
 
-                <div class="reader-controls">
-                    ${data.navigation.prev && data.navigation.prev !== '#/prev/' ? 
-                        `<button class="btn-primary" onclick="app.loadRead('${this.extractSlug(data.navigation.prev)}')">Prev Chapter</button>` : ''}
+                <!-- Big Navigation Buttons (Bottom) -->
+                <div class="reader-footer-nav">
+                    ${prevLink ? `
+                        <div class="nav-card" onclick="app.loadRead('${prevLink}')">
+                            <i class="fas fa-chevron-left"></i>
+                            <span>Chapter Sebelumnya</span>
+                        </div>
+                    ` : '<div class="nav-card" style="opacity:0.5; cursor:default;"><span>Awal</span></div>'}
+
+                    ${nextLink ? `
+                        <div class="nav-card" onclick="app.loadRead('${nextLink}')">
+                            <i class="fas fa-chevron-right"></i>
+                            <span>Chapter Selanjutnya</span>
+                        </div>
+                    ` : '<div class="nav-card" onclick="app.loadDetail(\''+parentSlug+'\')"><i class="fas fa-check"></i><span>Selesai</span></div>'}
+                </div>
+
+                <!-- Floating Toolbar -->
+                <div class="floating-bar">
+                    <button class="float-btn" onclick="app.loadDetail('${parentSlug}')"><i class="fas fa-info-circle"></i></button>
                     
-                    ${data.navigation.next && data.navigation.next !== '#/next/' ? 
-                        `<button class="btn-primary" onclick="app.loadRead('${this.extractSlug(data.navigation.next)}')">Next Chapter</button>` : ''}
+                    <button class="float-btn" ${!prevLink ? 'disabled' : `onclick="app.loadRead('${prevLink}')"`}>
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    
+                    <button class="float-btn" ${!nextLink ? 'disabled' : `onclick="app.loadRead('${nextLink}')"`}>
+                        <i class="fas fa-step-forward"></i>
+                    </button>
                 </div>
             </div>
         `;
         this.container.innerHTML = html;
-        window.scrollTo(0, 0);
-    },
-
-    // --- SEARCH ---
-    async handleSearch() {
-        const query = document.getElementById('searchInput').value;
-        if (!query) return;
-        const data = await this.fetchData(`/search/${query.replace(/ /g, '+')}`);
-        
-        if (!data || !data.success) return;
-
-        this.container.innerHTML = `
-            <div class="container" style="margin-top:20px;">
-                <div class="section-header"><span class="section-title">Hasil: "${query}"</span></div>
-                <div class="manga-grid">
-                    ${data.results.map(manga => this.renderCard(manga)).join('')}
-                </div>
-            </div>
-        `;
-    },
-
-    // --- GENRES & LIST ---
-    async loadGenres() {
-        const data = await this.fetchData('/genres');
-        if(!data) return;
-        
-        let html = `
-            <div class="container" style="margin-top:20px;">
-                <div class="section-header"><span class="section-title">Jelajahi Genre</span></div>
-                <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
-                    ${data.genres.map(g => `
-                        <button class="btn-nav" onclick="app.loadGenreResult('${g.id}', 1, '${g.name}')">${g.name}</button>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-        this.container.innerHTML = html;
-    },
-
-    async loadGenreResult(id, page, name) {
-        const data = await this.fetchData(`/genre/${id}/${page}`);
-        if(!data) return;
-        
-        this.container.innerHTML = `
-            <div class="container" style="margin-top:20px;">
-                <div class="section-header"><span class="section-title">Genre: ${name}</span></div>
-                <div class="manga-grid">
-                    ${data.mangaList.map(m => this.renderCard(m)).join('')}
-                </div>
-                <div style="margin-top:30px; text-align:center;">
-                     ${data.pagination.hasNextPage ? 
-                        `<button class="btn-primary" onclick="app.loadGenreResult('${id}', ${data.pagination.nextPage}, '${name}')">Next Page</button>` : ''}
-                </div>
-            </div>
-        `;
         window.scrollTo(0,0);
     },
 
-    async loadList(page) {
-        const data = await this.fetchData(page === 1 ? '/list' : `/list/${page}`);
-        if(!data) return;
-
-        this.container.innerHTML = `
-            <div class="container" style="margin-top:20px;">
-                <div class="section-header"><span class="section-title">Daftar Komik (Hal ${page})</span></div>
-                <div class="manga-grid">
-                    ${data.mangaList.map(m => this.renderCard(m)).join('')}
-                </div>
-                <div style="margin-top:30px; text-align:center; display:flex; justify-content:center; gap:20px;">
-                    ${page > 1 ? `<button class="btn-nav" onclick="app.loadList(${page-1})">Prev</button>` : ''}
-                    ${data.pagination.hasNextPage ? `<button class="btn-primary" onclick="app.loadList(${data.pagination.nextPage})">Next</button>` : ''}
-                </div>
-            </div>
-        `;
-        window.scrollTo(0,0);
-    },
-
-    // --- RENDER CARD HELPER ---
+    // --- RENDER HELPERS ---
     renderCard(manga) {
-        // Logic untuk menentukan teks chapter atau time
-        let subText = '';
-        let timeText = '';
-
-        if(manga.chapter) {
-            subText = manga.chapter;
-        } else if (manga.chapters && manga.chapters.length > 0) {
-            subText = manga.chapters[0].title;
-            timeText = `<div class="time-update">${manga.chapters[0].time}</div>`;
-        }
-
-        const typeBadge = this.safe(manga.type) ? `<span class="badge-type">${manga.type}</span>` : '';
-        const ratingBadge = this.safe(manga.rating) ? `<span class="badge-rate"><i class="fas fa-star"></i> ${manga.rating}</span>` : '';
-
+        // Ambil data chapter terbaru
+        let chTitle = manga.chapter || (manga.chapters && manga.chapters[0] ? manga.chapters[0].title : 'Unknown');
+        
         return `
             <div class="manga-card" onclick="app.loadDetail('${manga.slug}')">
-                <div class="img-wrapper">
-                    ${typeBadge}
-                    ${ratingBadge}
-                    <img src="${manga.image}" class="card-img" loading="lazy" alt="${manga.title}">
-                </div>
-                <div class="card-info">
-                    <div class="card-title" title="${manga.title}">${manga.title}</div>
-                    <div class="card-meta">
-                        <span>${subText}</span>
+                <div class="card-poster">
+                    <div class="rating-tag" style="position:absolute; top:10px; right:10px; font-size:0.7rem;">
+                        <i class="fas fa-star"></i> ${manga.rating || '-'}
                     </div>
-                    ${timeText}
+                    <img src="${manga.image}" loading="lazy" alt="${manga.title}">
+                    <div class="card-overlay">
+                        <div class="card-title">${manga.title}</div>
+                        <div class="card-chap">${chTitle}</div>
+                    </div>
                 </div>
             </div>
         `;
     },
+    
+    // --- SEARCH & GENRE HANDLERS (Same logic, updated UI called internally) ---
+    async handleSearch() {
+        const q = document.getElementById('searchInput').value;
+        if(!q) return;
+        const data = await this.fetchAPI(`/search/${q.replace(/ /g, '+')}`);
+        if(data && data.success) {
+            this.container.innerHTML = `
+                <div class="container">
+                    <div class="section-head"><span class="section-title">Hasil: ${q}</span></div>
+                    <div class="manga-grid">${data.results.map(m => this.renderCard(m)).join('')}</div>
+                </div>`;
+        }
+    },
 
-    extractSlug(url) {
-        if(!url) return '';
-        const parts = url.split('/');
-        return parts[parts.length - 1] || parts[parts.length - 2]; 
+    async loadList(page=1) {
+        const data = await this.fetchAPI(`/list/${page}`);
+        if(data) {
+             this.container.innerHTML = `
+                <div class="container">
+                    <div class="section-head"><span class="section-title">Daftar Komik (Hal ${page})</span></div>
+                    <div class="manga-grid">${data.mangaList.map(m => this.renderCard(m)).join('')}</div>
+                    <div style="margin:40px 0; text-align:center;">
+                        ${data.pagination.hasNextPage ? `<button onclick="app.loadList(${data.pagination.nextPage})" class="btn-read">Next</button>` : ''}
+                    </div>
+                </div>`;
+        }
+    },
+
+    async loadGenres() {
+        const data = await this.fetchAPI('/genres');
+        this.container.innerHTML = `
+            <div class="container">
+                <div class="section-head"><span class="section-title">Semua Genre</span></div>
+                <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                    ${data.genres.map(g => `<button onclick="app.loadGenre('${g.id}', 1)" class="btn-read" style="background:#222; color:#fff; font-size:0.8rem;">${g.name}</button>`).join('')}
+                </div>
+            </div>`;
+    },
+
+    async loadGenre(id, page) {
+        const data = await this.fetchAPI(`/genre/${id}/${page}`);
+        this.container.innerHTML = `
+            <div class="container">
+                <div class="section-head"><span class="section-title">Genre Result</span></div>
+                <div class="manga-grid">${data.mangaList.map(m => this.renderCard(m)).join('')}</div>
+                <div style="margin:20px; text-align:center;">${data.pagination.hasNextPage ? `<button onclick="app.loadGenre('${id}', ${data.pagination.nextPage})" class="btn-read">Next</button>` : ''}</div>
+            </div>`;
     }
 };
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     app.loadHome();
-    
-    // Enter key search support
-    document.getElementById('searchInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            app.handleSearch();
-        }
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') app.handleSearch();
     });
 });
