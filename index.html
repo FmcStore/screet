@@ -3,44 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FmcPlus - Premium Reader</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>FmcPlus - Premium Comic Reader</title>
+    
+    <!-- PENTING: Agar request gambar tidak ditolak server asal -->
+    <meta name="referrer" content="no-referrer">
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- CSS Utama -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo" onclick="app.loadHome()">
                 <i class="fas fa-crown"></i> FmcPlus
             </div>
             
-            <div style="display:flex; align-items:center; gap:20px;">
+            <div class="nav-right">
                 <div class="search-wrap">
                     <input type="text" id="searchInput" class="search-input" placeholder="Cari Manga...">
+                    <i class="fas fa-search search-icon" onclick="app.handleSearch()"></i>
                 </div>
-                <div style="display:flex; gap:15px;" class="nav-links-desktop">
-                    <a href="#" onclick="app.loadHome()" style="color:#fff;"><i class="fas fa-home"></i></a>
-                    <a href="#" onclick="app.loadList(1)" style="color:#fff;"><i class="fas fa-list"></i></a>
-                    <a href="#" onclick="app.loadGenres()" style="color:#fff;"><i class="fas fa-tags"></i></a>
+                <div class="nav-links-desktop">
+                    <a href="#" onclick="app.loadHome()" title="Home"><i class="fas fa-home"></i></a>
+                    <a href="#" onclick="app.loadList(1)" title="Daftar"><i class="fas fa-list"></i></a>
+                    <a href="#" onclick="app.loadGenres()" title="Genre"><i class="fas fa-tags"></i></a>
                 </div>
             </div>
         </div>
     </nav>
 
+    <!-- Main Content -->
     <main id="app">
-        <!-- Konten di-load di sini -->
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <p>Memuat FmcPlus...</p>
+        </div>
     </main>
 
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 FmcPlus Project. API by Sanka Vollerei.</p>
+    </footer>
+
+    <!-- Script Utama -->
     <script src="script.js"></script>
-    <style>
-        /* Sembunyikan link text di mobile agar rapi */
-        @media (max-width: 600px) {
-            .nav-links-desktop { display: none !important; }
-            .search-wrap { display: none; } /* Opsional: hilangkan search di header mobile */
-            /* Tambahkan search di dalam halaman home saja untuk mobile */
-        }
-    </style>
 </body>
 </html>
